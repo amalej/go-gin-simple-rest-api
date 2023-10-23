@@ -18,7 +18,7 @@ type item struct {
 var items = []item{
 	{ID: "1", Name: "Blue shirt", Type: "shirt", Description: "A blue shirt", Quantity: 3},
 	{ID: "2", Name: "Green shirt", Type: "shirt", Description: "A green shirt", Quantity: 5},
-	{ID: "3", Name: "Black shorts", Type: "short", Description: "A black short", Quantity: 2},
+	{ID: "3", Name: "Black shorts", Type: "shorts", Description: "A black short", Quantity: 2},
 	{ID: "4", Name: "Red jacket", Type: "jacket", Description: "A red jacket", Quantity: 1},
 }
 
@@ -57,10 +57,40 @@ func createItem(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, newItem)
 }
 
+func searchItemByType(c *gin.Context) {
+	itemType, hasTypeQuery := c.GetQuery("type")
+
+	if hasTypeQuery == false {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Missing type query"})
+		return
+	}
+
+	itemList, err := getItemByType(itemType)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, itemList)
+}
+
+func getItemByType(itemType string) ([]item, error) {
+	newItems := []item{}
+	for i, item := range items {
+		if item.Type == itemType {
+			newItems = append(newItems, items[i])
+		}
+	}
+	if len(newItems) != 0 {
+		return newItems, nil
+	}
+	return nil, errors.New("item_not_found")
+}
 func main() {
 	router := gin.Default()
 	router.GET("/items", getItems)
 	router.GET("/items/:id", lookUpItemById)
 	router.POST("/items", createItem)
+	router.GET("/items/search", searchItemByType)
 	router.Run("localhost:8080")
 }
