@@ -1,5 +1,7 @@
 # go-gin-simple-rest-api
 
+An extremely basic example of a REST API server using Go
+
 ## Routes
 
 [GET] localhost:8080/items
